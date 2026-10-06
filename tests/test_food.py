@@ -16,9 +16,18 @@ async def test_food_search(client, api):
     dishes = out["dishes"]
     assert out["total"] == 1291
     assert dishes[3] == {
-        "id": 21543750, "title": "پیتزا تورینو ", "price": 834000, "discount_pct": 0, "final_price": 834000,
-        "rating": 3.5, "vendor_code": "09o21d", "vendor": "فست فود پینو پینو (قصرالدشت)", "delivery_fee": 40000,
-        "min_order": 300000, "open": True, "sponsored": False,
+        "id": 21543750,
+        "title": "پیتزا تورینو ",
+        "price": 834000,
+        "discount_pct": 0,
+        "final_price": 834000,
+        "rating": 3.5,
+        "vendor_code": "09o21d",
+        "vendor": "فست فود پینو پینو (قصرالدشت)",
+        "delivery_fee": 40000,
+        "min_order": 300000,
+        "open": True,
+        "sponsored": False,
     }
     assert len(api.calls) == 1  # relevance: search index only, no menu calls
     sent = api.calls[0].url.params
@@ -26,25 +35,54 @@ async def test_food_search(client, api):
 
 
 def _search_item(id, title, price, ratio, vendor):
-    return {"id": id, "title": title, "price": price, "discountRatio": ratio, "priceAfterDiscount": price * (100 - ratio) // 100,
-            "normalized_rating": 8, "vendor": {"code": vendor, "title": vendor, "deliveryFee": 0}}
+    return {
+        "id": id,
+        "title": title,
+        "price": price,
+        "discountRatio": ratio,
+        "priceAfterDiscount": price * (100 - ratio) // 100,
+        "normalized_rating": 8,
+        "vendor": {"code": vendor, "title": vendor, "deliveryFee": 0},
+    }
 
 
 def _menu(*categories):
-    menus = [{"category": cat, "categoryId": i + 1, "products": [
-        {"id": id, "title": title, "price": price, "discount": discount, "discountRatio": discount * 100 // price, "containerPrice": 0}
-        for id, title, price, discount in products
-    ]} for i, (cat, products) in enumerate(categories)]
+    menus = [
+        {
+            "category": cat,
+            "categoryId": i + 1,
+            "products": [
+                {
+                    "id": id,
+                    "title": title,
+                    "price": price,
+                    "discount": discount,
+                    "discountRatio": discount * 100 // price,
+                    "containerPrice": 0,
+                }
+                for id, title, price, discount in products
+            ],
+        }
+        for i, (cat, products) in enumerate(categories)
+    ]
     return {"status": True, "data": {"vendor": {"title": "v"}, "menus": menus}}
 
 
 async def test_food_search_cheapest_uses_live_menu_prices(client, api):
-    api["/search/api/v5/search"] = {"status": True, "data": {"product_variations": {"total": 4, "items": [
-        _search_item(1, "پیتزا میکس", 438000, 90, "v1"),  # stale index: the menu has no discount
-        _search_item(2, "سس پیتزا", 30000, 0, "v1"),  # side item
-        _search_item(3, "پیتزا پپرونی", 479000, 30, "v2"),
-        _search_item(4, "پیتزا گوشت", 300000, 0, "v2"),  # no longer on the menu
-    ]}}}
+    api["/search/api/v5/search"] = {
+        "status": True,
+        "data": {
+            "product_variations": {
+                "total": 4,
+                "items": [
+                    _search_item(1, "پیتزا میکس", 438000, 90, "v1"),  # stale index: the menu has no discount
+                    _search_item(2, "سس پیتزا", 30000, 0, "v1"),  # side item
+                    _search_item(3, "پیتزا پپرونی", 479000, 30, "v2"),
+                    _search_item(4, "پیتزا گوشت", 300000, 0, "v2"),  # no longer on the menu
+                ],
+            }
+        },
+    }
     menus = {
         "v1": _menu(("پیتزا", [(1, "پیتزا میکس", 438000, 0)]), ("سرویس اضافه", [(2, "سس پیتزا", 30000, 0)])),
         "v2": _menu(("پیتزا", [(3, "پیتزا پپرونی", 479000, 143700)])),
@@ -84,7 +122,11 @@ async def test_food_find_cheapest(client, api):
     assert first["title"] == "مینی پیتزا پپرونی" and first["total"] == 416500 and first["source"] == "food_party"
     assert "p8gq62" not in {d["vendor_code"] for d in out["dishes"]}  # closed vendor's party deal dropped
     menu_dish = next(d for d in out["dishes"] if d["source"] == "menu")
-    assert menu_dish["vendor_code"] == "p6mr7e" and menu_dish["total"] == 1208000 + 32000 and menu_dish["min_order"] == 699000
+    assert (
+        menu_dish["vendor_code"] == "p6mr7e"
+        and menu_dish["total"] == 1208000 + 32000
+        and menu_dish["min_order"] == 699000
+    )
     assert "تنوری برگر" not in {d["title"] for d in out["dishes"]}
     assert {c.url.params.get("vendorCode") for c in api.calls} >= {"p6mr7e", "0rx16o"}
     assert "pz88qe" not in {c.url.params.get("vendorCode") for c in api.calls}
@@ -92,16 +134,28 @@ async def test_food_find_cheapest(client, api):
 
 async def test_food_restaurants(client, api):
     api["/search/api/v1/desktop/vendors-list"] = fixture("food_vendors_list.json")
-    result = await client.call_tool("food_restaurants", {**SHIRAZ, "has_discount": True, "free_delivery": True, "sort": "max_rate"})
+    result = await client.call_tool(
+        "food_restaurants", {**SHIRAZ, "has_discount": True, "free_delivery": True, "sort": "max_rate"}
+    )
     rows = result.structured_content["restaurants"]
     assert rows[1] == {
-        "code": "0rx16o", "title": "فست فود تند و تیز هدایت", "rating": 4.2, "reviews": 5730, "open": True,
-        "delivers": True, "delivery_fee": 21700, "eta_min": 65, "discount_pct": 25,
+        "code": "0rx16o",
+        "title": "فست فود تند و تیز هدایت",
+        "rating": 4.2,
+        "reviews": 5730,
+        "open": True,
+        "delivers": True,
+        "delivery_fee": 21700,
+        "eta_min": 65,
+        "discount_pct": 25,
         "best_coupon": "ارسال رایگان و 5% تخفیف ویژه کاربران PRO",
     }
     assert rows[0]["best_coupon"] is None
     sent = api.calls[0].url.params
-    assert json.loads(sent["filters"]) == {"filters": ["delivery_fee_until_0", "has_discount"], "sortings": ["max_rate"]}
+    assert json.loads(sent["filters"]) == {
+        "filters": ["delivery_fee_until_0", "has_discount"],
+        "sortings": ["max_rate"],
+    }
     assert sent["page_size"] == "20" and sent["sp_alias"] == "restaurant"
 
 
@@ -123,15 +177,26 @@ async def test_food_menu(client, api):
     result = await client.call_tool("food_menu", {"vendor_code": "947evd", **SHIRAZ})
     out = result.structured_content
     assert out["vendor"] == {
-        "code": "947evd", "title": "پیتزا وای فای (سرباز)", "rating": 4.7, "reviews": 3275, "open": True,
-        "min_order": 699000, "delivery_fee": 25000,
+        "code": "947evd",
+        "title": "پیتزا وای فای (سرباز)",
+        "rating": 4.7,
+        "reviews": 3275,
+        "open": True,
+        "min_order": 699000,
+        "delivery_fee": 25000,
     }
     items = {i["id"]: i for i in out["items"]}
     assert out["total_items"] == 6 and len(out["items"]) == 6
     assert items[34224007]["category"] == "پیتزا رژیمی"
     assert items[34224063] == {
-        "id": 34224063, "title": "پیتزا رژیمی فیله گوشت", "category": "پیتزا رژیمی", "price": 1238000,
-        "discount_pct": 19, "final_price": 1000000, "packaging": 10000, "available": True,
+        "id": 34224063,
+        "title": "پیتزا رژیمی فیله گوشت",
+        "category": "پیتزا رژیمی",
+        "price": 1238000,
+        "discount_pct": 19,
+        "final_price": 1000000,
+        "packaging": 10000,
+        "available": True,
     }
     assert items[26639918]["available"] is False
     assert api.calls[0].url.params["vendorCode"] == "947evd"
@@ -174,8 +239,11 @@ async def test_food_reviews(client, api):
     out = result.structured_content
     assert out["total"] == 1020
     assert out["reviews"][0] == {
-        "date": "2026-10-02 21:28:51", "rating": 5.0, "text": "واقعا عالی بود مچکرم",
-        "ordered": ["سالاد سزار گریل", "آب معدنی کوچک"], "reply": None,
+        "date": "2026-10-02 21:28:51",
+        "rating": 5.0,
+        "text": "واقعا عالی بود مچکرم",
+        "ordered": ["سالاد سزار گریل", "آب معدنی کوچک"],
+        "reply": None,
     }
     assert out["reviews"][2]["reply"]
     assert api.calls[0].url.params["page"] == "1"
@@ -206,9 +274,18 @@ async def test_food_meal_for_one(client, api):
     out = result.structured_content
     assert len(out["meals"]) == 2
     assert out["meals"][0] == {
-        "id": 37360889, "title": "مینی زینگربرگر با سالادکلم", "price": 335000, "discount_pct": 26,
-        "final_price": 247900, "rating": 4.2, "vendor_code": "0nqj9r", "vendor": "ایران برگر (فلکه گاز)",
-        "open": True, "delivery_fee": 0, "min_order": 420000, "eta_min": 60,
+        "id": 37360889,
+        "title": "مینی زینگربرگر با سالادکلم",
+        "price": 335000,
+        "discount_pct": 26,
+        "final_price": 247900,
+        "rating": 4.2,
+        "vendor_code": "0nqj9r",
+        "vendor": "ایران برگر (فلکه گاز)",
+        "open": True,
+        "delivery_fee": 0,
+        "min_order": 420000,
+        "eta_min": 60,
     }
     none = await client.call_tool("food_meal_for_one", {**SHIRAZ, "max_price": 1000})
     assert none.structured_content["meals"] == []
@@ -221,8 +298,12 @@ async def test_food_discounted_vendors(client, api):
     result = await client.call_tool("food_discounted_vendors", SHIRAZ)
     out = result.structured_content
     assert out["discounted"][0] == {
-        "code": "0nqj9r", "title": "ایران برگر (فلکه گاز)", "promotion": "۳۰% تخفیف پارتی", "open": True,
-        "delivery_fee": 0, "eta_min": 60,
+        "code": "0nqj9r",
+        "title": "ایران برگر (فلکه گاز)",
+        "promotion": "۳۰% تخفیف پارتی",
+        "open": True,
+        "delivery_fee": 0,
+        "eta_min": 60,
     }
     assert out["gem"]["ends"] == "2026-10-02T23:30:00+03:30"
     assert out["gem"]["vendors"][0]["discount"] == "%20 تخفیف شکار" and out["gem"]["vendors"][0]["rating"] == 4.7
@@ -255,7 +336,10 @@ async def test_food_restaurants_name_filter_pages_after_open_filter(client, api)
     vendors = fixture("food_vendors_list.json")
     rows = vendors["data"]["finalResult"]
     template = rows[0]
-    rows[:] = [{**template, "data": {**template["data"], "code": f"c{i:03}", "title": "پیتزا " + str(i), "is_open": i >= 20}} for i in range(25)]
+    rows[:] = [
+        {**template, "data": {**template["data"], "code": f"c{i:03}", "title": "پیتزا " + str(i), "is_open": i >= 20}}
+        for i in range(25)
+    ]
     api["/search/api/v1/desktop/vendors-list"] = vendors
     out = (await client.call_tool("food_restaurants", {**SHIRAZ, "query": "پيتزا"})).structured_content  # Arabic yeh
     assert [r["code"] for r in out["restaurants"]] == [f"c{i:03}" for i in range(20, 25)]

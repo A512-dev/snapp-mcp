@@ -18,8 +18,15 @@ TEHRAN = (35.6892, 51.3890)
 
 @tool("Find location")
 async def find_location(
-    query: Annotated[str, Field(min_length=2, description="Place, street, landmark or neighbourhood, Persian works best, e.g. 'میدان ونک'.")],
-    near_lat: Annotated[float | None, Field(description="Bias results toward this latitude (e.g. a city center from list_cities).")] = None,
+    query: Annotated[
+        str,
+        Field(
+            min_length=2, description="Place, street, landmark or neighbourhood, Persian works best, e.g. 'میدان ونک'."
+        ),
+    ],
+    near_lat: Annotated[
+        float | None, Field(description="Bias results toward this latitude (e.g. a city center from list_cities).")
+    ] = None,
     near_long: Annotated[float | None, Field(description="Bias results toward this longitude.")] = None,
     limit: Annotated[int, Field(ge=1, le=20, description="Max places to return.")] = 5,
 ) -> dict[str, Any]:
@@ -61,7 +68,9 @@ async def reverse_geocode(lat: Lat, long: Long) -> dict[str, Any]:
 
 @tool("List cities")
 async def list_cities(
-    query: Annotated[str | None, Field(description="Optional filter on the Persian title or English code, e.g. 'شیراز' or 'Shiraz'.")] = None,
+    query: Annotated[
+        str | None, Field(description="Optional filter on the Persian title or English code, e.g. 'شیراز' or 'Shiraz'.")
+    ] = None,
 ) -> dict[str, Any]:
     """List cities Snappfood serves, with id, names and center coordinates.
 

@@ -12,7 +12,9 @@ from .http import MARKET_BASE, MARKET_PARAMS, ApiError, fetch
 from .location import Lat, Long
 from .registry import tool
 
-VendorCode = Annotated[str, Field(pattern=r"^[0-9a-z]{4,10}$", description="Store code from market_search / market_stores, e.g. '32xxwe'.")]
+VendorCode = Annotated[
+    str, Field(pattern=r"^[0-9a-z]{4,10}$", description="Store code from market_search / market_stores, e.g. '32xxwe'.")
+]
 Page = Annotated[int, Field(ge=0, le=50, description="Page number, from 0.")]
 
 # Anonymous token for the endpoints that answer 401 without one (valid 3 days).
@@ -22,7 +24,9 @@ _device_uid = str(uuid.uuid4())
 
 @tool("Search groceries")
 async def market_search(
-    query: Annotated[str, Field(min_length=2, description="Product name, Persian works best, e.g. 'شیر' or 'ماست کاله'.")],
+    query: Annotated[
+        str, Field(min_length=2, description="Product name, Persian works best, e.g. 'شیر' or 'ماست کاله'.")
+    ],
     lat: Lat,
     long: Long,
     page: Page = 0,
@@ -68,7 +72,12 @@ async def market_find_cheapest(
         for v in data.get("items") or []:
             if not (v.get("is_open") and v.get("deliver") and v.get("does_deliver", True)):
                 continue
-            store = {"store_code": v.get("code"), "store_title": v.get("title"), "delivery_fee": v.get("deliveryFee"), "min_order": v.get("minOrder")}
+            store = {
+                "store_code": v.get("code"),
+                "store_title": v.get("title"),
+                "delivery_fee": v.get("deliveryFee"),
+                "min_order": v.get("minOrder"),
+            }
             offers += [{**_product(p), **store} for p in v.get("products") or [] if (p.get("stock") or 0) > 0]
     offers.sort(key=lambda o: o["final_price"])
     return {"offers": offers[:limit], "offers_found": len(offers)}
@@ -166,7 +175,8 @@ async def market_store_info(vendor_code: VendorCode, lat: Lat, long: Long) -> di
     # Coupons need the numeric id from vendor-info, and the store's pro flag or pro coupons are hidden.
     try:
         body = await _fetch_auth(
-            f"{MARKET_BASE}/belladonna/api/v1/coupon/vendor/{v['id']}", {**loc, "vendorPro": str(bool(v.get("is_pro"))).lower()}
+            f"{MARKET_BASE}/belladonna/api/v1/coupon/vendor/{v['id']}",
+            {**loc, "vendorPro": str(bool(v.get("is_pro"))).lower()},
         )
         result["coupons"] = [
             {
@@ -190,8 +200,13 @@ async def market_store_products(
     lat: Lat,
     long: Long,
     query: Annotated[str | None, Field(min_length=2, description="Search text inside this store, e.g. 'ماست'.")] = None,
-    category_id: Annotated[int | None, Field(ge=1, description="Top-level category id (from this tool without arguments, or market_categories).")] = None,
-    subcategory_id: Annotated[int | None, Field(ge=1, description="Sub-category id; needs its parent category_id.")] = None,
+    category_id: Annotated[
+        int | None,
+        Field(ge=1, description="Top-level category id (from this tool without arguments, or market_categories)."),
+    ] = None,
+    subcategory_id: Annotated[
+        int | None, Field(ge=1, description="Sub-category id; needs its parent category_id.")
+    ] = None,
     page: Page = 0,
 ) -> dict[str, Any]:
     """Browse or search the products of one store.
@@ -229,10 +244,16 @@ async def market_store_products(
             "total": data.get("count"),
             "products": [_product(x["data"]) for x in data.get("finalResult") or [] if x.get("data")],
         }
-    body = await fetch(f"{MARKET_BASE}/mobile/search/categories", {**loc, "vendorCode": vendor_code}, common=MARKET_PARAMS)
+    body = await fetch(
+        f"{MARKET_BASE}/mobile/search/categories", {**loc, "vendorCode": vendor_code}, common=MARKET_PARAMS
+    )
     return {
         "categories": [
-            {"id": c.get("id"), "title": c.get("title"), "sub_categories": [{"id": s.get("id"), "title": s.get("title")} for s in c.get("sub_categories") or []]}
+            {
+                "id": c.get("id"),
+                "title": c.get("title"),
+                "sub_categories": [{"id": s.get("id"), "title": s.get("title")} for s in c.get("sub_categories") or []],
+            }
             for c in body.get("items") or []
         ]
     }
@@ -298,7 +319,8 @@ async def market_party_deals(
     at most capacity_per_order deal items. segment 'new_user' deals are only for new customers.
     """
     body = await _fetch_auth(
-        f"{MARKET_BASE}/landing/market-party/{lat}/{long}", {"lat": lat, "long": long, "deal_type": "supermarket", "isPro": "false"}
+        f"{MARKET_BASE}/landing/market-party/{lat}/{long}",
+        {"lat": lat, "long": long, "deal_type": "supermarket", "isPro": "false"},
     )
     data = body.get("data") or {}
     deals, seen = [], set()
@@ -335,12 +357,19 @@ async def market_reviews(vendor_code: VendorCode) -> dict[str, Any]:
     Use as a quality check before recommending a store. The API returns the same 30
     comments whatever the page, so there is no paging.
     """
-    body = await fetch(f"{MARKET_BASE}/mobile/v1/restaurant/vendor-comment", {"vendorCode": vendor_code}, common=MARKET_PARAMS)
+    body = await fetch(
+        f"{MARKET_BASE}/mobile/v1/restaurant/vendor-comment", {"vendorCode": vendor_code}, common=MARKET_PARAMS
+    )
     data = body["data"]
     return {
         "count": data.get("count"),
         "comments": [
-            {"date": c.get("createdDate"), "rating": _rating(c.get("rating")), "text": c.get("commentText"), "feeling": c.get("feeling")}
+            {
+                "date": c.get("createdDate"),
+                "rating": _rating(c.get("rating")),
+                "text": c.get("commentText"),
+                "feeling": c.get("feeling"),
+            }
             for c in data.get("comments") or []
         ],
     }

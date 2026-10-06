@@ -12,7 +12,13 @@ from .http import FOOD_APIGW, FOOD_BASE, FOOD_PARAMS, ApiError, fetch
 from .location import Lat, Long
 from .registry import tool
 
-VendorCode = Annotated[str, Field(pattern=r"^[A-Za-z0-9]{3,12}$", description="Snappfood vendor code, e.g. '947evd' (from food_search / food_restaurants).")]
+VendorCode = Annotated[
+    str,
+    Field(
+        pattern=r"^[A-Za-z0-9]{3,12}$",
+        description="Snappfood vendor code, e.g. '947evd' (from food_search / food_restaurants).",
+    ),
+]
 Query = Annotated[str, Field(min_length=2, description="Dish or food word, Persian works best, e.g. 'پیتزا', 'کباب'.")]
 
 PAGE_SIZE = 20
@@ -25,8 +31,12 @@ async def food_search(
     lat: Lat,
     long: Long,
     discounted_only: Annotated[bool, Field(description="Only dishes with a discount.")] = False,
-    sort: Annotated[Literal["relevance", "cheapest", "biggest_discount"], Field(description="Order of the results.")] = "relevance",
-    include_protein: Annotated[bool, Field(description="Also search protein stores (butchers, poultry, eggs), which are hidden by default.")] = False,
+    sort: Annotated[
+        Literal["relevance", "cheapest", "biggest_discount"], Field(description="Order of the results.")
+    ] = "relevance",
+    include_protein: Annotated[
+        bool, Field(description="Also search protein stores (butchers, poultry, eggs), which are hidden by default.")
+    ] = False,
     limit: Annotated[int, Field(ge=1, le=50, description="Max dishes to return.")] = 20,
 ) -> dict[str, Any]:
     """Search dishes by name near a delivery point, with price, discount and restaurant.
@@ -54,20 +64,22 @@ async def food_search(
                 continue
             seen.add(it["id"])
             v = it.get("vendor") or {}
-            dishes.append({
-                "id": it["id"],
-                "title": it["title"],
-                "price": it["price"],
-                "discount_pct": it.get("discountRatio") or 0,
-                "final_price": it["priceAfterDiscount"],
-                "rating": _stars(it.get("normalized_rating")),
-                "vendor_code": v.get("code"),
-                "vendor": v.get("title"),
-                "delivery_fee": _delivery_fee(v),
-                "min_order": v.get("minOrder"),
-                "open": v.get("is_open"),
-                "sponsored": bool(it.get("is_ads")),
-            })
+            dishes.append(
+                {
+                    "id": it["id"],
+                    "title": it["title"],
+                    "price": it["price"],
+                    "discount_pct": it.get("discountRatio") or 0,
+                    "final_price": it["priceAfterDiscount"],
+                    "rating": _stars(it.get("normalized_rating")),
+                    "vendor_code": v.get("code"),
+                    "vendor": v.get("title"),
+                    "delivery_fee": _delivery_fee(v),
+                    "min_order": v.get("minOrder"),
+                    "open": v.get("is_open"),
+                    "sponsored": bool(it.get("is_ads")),
+                }
+            )
     total = sum(b["data"]["product_variations"]["total"] for b in bodies)
     if sort == "relevance":
         return {"total": total, "dishes": dishes[:limit]}
@@ -88,7 +100,9 @@ async def food_find_cheapest(
     query: Query,
     lat: Lat,
     long: Long,
-    max_restaurants: Annotated[int, Field(ge=1, le=60, description="How many open restaurants' menus to scan (more = slower, more complete).")] = 30,
+    max_restaurants: Annotated[
+        int, Field(ge=1, le=60, description="How many open restaurants' menus to scan (more = slower, more complete).")
+    ] = 30,
     limit: Annotated[int, Field(ge=1, le=50, description="Max dishes to return.")] = 20,
 ) -> dict[str, Any]:
     """Find the cheapest way to get a dish: scans menus of nearby open restaurants plus FoodParty deals.
@@ -244,7 +258,9 @@ async def food_order_costs(vendor_code: VendorCode, lat: Lat, long: Long) -> dic
     """
     loc = {"lat": lat, "long": long}
     state, rules, rewards = await asyncio.gather(
-        fetch(f"{FOOD_BASE}/mobile/v2/restaurant/details/state", {**loc, "vendorCode": vendor_code}, common=FOOD_PARAMS),
+        fetch(
+            f"{FOOD_BASE}/mobile/v2/restaurant/details/state", {**loc, "vendorCode": vendor_code}, common=FOOD_PARAMS
+        ),
         fetch(f"{FOOD_BASE}/customer/order/v1/vendor/{vendor_code}/min-basket-rules", loc, common=FOOD_PARAMS),
         fetch(f"{FOOD_APIGW}/menu-read-model/vendor-rewards/{vendor_code}", loc, common=FOOD_PARAMS),
         return_exceptions=True,
@@ -279,16 +295,18 @@ async def food_order_costs(vendor_code: VendorCode, lat: Lat, long: Long) -> dic
                 out["other_rewards"].append({"type": r.get("type"), "data": r.get(f"{r.get('type')}_data")})
                 continue
             packet = c.get("reward_packet") or {}
-            out["coupons"].append({
-                "title": c.get("title"),
-                "reward": c.get("reward"),
-                "delivery_discount_pct": (packet.get("deliveryDiscount") or {}).get("value"),
-                "basket_discount": packet.get("basketDiscount"),
-                "free_items": [p.get("title") for p in packet.get("extraProducts") or []],
-                "min_basket": int(c["minimum_basket_price"]) if c.get("minimum_basket_price") else None,
-                "only_order_number": c.get("activation_order_number") or None,
-                "condition": c.get("condition_message"),
-            })
+            out["coupons"].append(
+                {
+                    "title": c.get("title"),
+                    "reward": c.get("reward"),
+                    "delivery_discount_pct": (packet.get("deliveryDiscount") or {}).get("value"),
+                    "basket_discount": packet.get("basketDiscount"),
+                    "free_items": [p.get("title") for p in packet.get("extraProducts") or []],
+                    "min_basket": int(c["minimum_basket_price"]) if c.get("minimum_basket_price") else None,
+                    "only_order_number": c.get("activation_order_number") or None,
+                    "condition": c.get("condition_message"),
+                }
+            )
     if failed:
         out["errors"] = [f"{name}: {r}" for name, r in failed.items()]
     return out
@@ -303,7 +321,13 @@ async def food_reviews(
 
     Use to judge quality, delays or packaging before recommending a restaurant.
     """
-    data = (await fetch(f"{FOOD_BASE}/mobile/v1/restaurant/vendor-comment", {"vendorCode": vendor_code, "page": page}, common=FOOD_PARAMS))["data"]
+    data = (
+        await fetch(
+            f"{FOOD_BASE}/mobile/v1/restaurant/vendor-comment",
+            {"vendorCode": vendor_code, "page": page},
+            common=FOOD_PARAMS,
+        )
+    )["data"]
     return {
         "total": data["count"] if (data.get("count") or 0) > 0 else None,
         "page": page,
@@ -325,7 +349,9 @@ async def food_party_deals(
     lat: Lat,
     long: Long,
     query: Annotated[str | None, Field(description="Only deals whose dish title contains this text.")] = None,
-    sort: Annotated[Literal["cheapest", "biggest_discount"], Field(description="Order of the deals.")] = "biggest_discount",
+    sort: Annotated[
+        Literal["cheapest", "biggest_discount"], Field(description="Order of the deals.")
+    ] = "biggest_discount",
     limit: Annotated[int, Field(ge=1, le=100, description="Max deals to return.")] = 30,
 ) -> dict[str, Any]:
     """List today's FoodParty flash deals (deep discounts, limited stock, time window) still in stock.
@@ -379,27 +405,35 @@ async def food_meal_for_one(
     Use for "cheap meal for one". Check min_order: a cheap meal may not reach the
     restaurant's minimum basket on its own.
     """
-    data = (await fetch(f"{FOOD_BASE}/search/api/v1/meal-for-one/product-list", {"lat": lat, "long": long, "page": 0, "page_size": 100}, common=FOOD_PARAMS))["data"]
+    data = (
+        await fetch(
+            f"{FOOD_BASE}/search/api/v1/meal-for-one/product-list",
+            {"lat": lat, "long": long, "page": 0, "page_size": 100},
+            common=FOOD_PARAMS,
+        )
+    )["data"]
     meals = []
     for row in data["finalResult"]:
         m = row["data"]
         if m.get("no_stock") or (max_price is not None and m["priceAfterDiscount"] > max_price):
             continue
         v = m.get("vendor") or {}
-        meals.append({
-            "id": m["id"],
-            "title": m["title"],
-            "price": m["price"],
-            "discount_pct": m.get("discountRatio") or 0,
-            "final_price": m["priceAfterDiscount"],
-            "rating": _stars(m.get("normalized_rating")),
-            "vendor_code": v.get("vendorCode"),
-            "vendor": v.get("title"),
-            "open": v.get("is_open"),
-            "delivery_fee": _delivery_fee(v),
-            "min_order": v.get("minOrder"),
-            "eta_min": v.get("eta"),
-        })
+        meals.append(
+            {
+                "id": m["id"],
+                "title": m["title"],
+                "price": m["price"],
+                "discount_pct": m.get("discountRatio") or 0,
+                "final_price": m["priceAfterDiscount"],
+                "rating": _stars(m.get("normalized_rating")),
+                "vendor_code": v.get("vendorCode"),
+                "vendor": v.get("title"),
+                "open": v.get("is_open"),
+                "delivery_fee": _delivery_fee(v),
+                "min_order": v.get("minOrder"),
+                "eta_min": v.get("eta"),
+            }
+        )
     meals.sort(key=lambda m: m["final_price"])
     return {"rule": data.get("description"), "meals": meals[:limit]}
 
@@ -460,18 +494,32 @@ async def food_discounted_vendors(lat: Lat, long: Long) -> dict[str, Any]:
     return out
 
 
-async def _vendor_list(loc: dict[str, Any], filters: dict[str, Any] | None = None, page: int = 0, size: int = 500) -> list[dict[str, Any]]:
+async def _vendor_list(
+    loc: dict[str, Any], filters: dict[str, Any] | None = None, page: int = 0, size: int = 500
+) -> list[dict[str, Any]]:
     """Restaurants delivering around `loc`; size 500 returns them all in one call."""
     body = await fetch(
         f"{FOOD_BASE}/search/api/v1/desktop/vendors-list",
-        {**loc, "page": page, "page_size": size, "sp_alias": "restaurant", "superType": "[1]", "filters": json.dumps(filters or {}), "query": ""},
+        {
+            **loc,
+            "page": page,
+            "page_size": size,
+            "sp_alias": "restaurant",
+            "superType": "[1]",
+            "filters": json.dumps(filters or {}),
+            "query": "",
+        },
         common=FOOD_PARAMS,
     )
     return [x["data"] for x in body["data"]["finalResult"] if x.get("type") == "VENDOR"]
 
 
 async def _menu(vendor_code: str, loc: dict[str, Any]) -> Any:
-    return await fetch(f"{FOOD_BASE}/mobile/v2/restaurant/details/dynamic", {**loc, "vendorCode": vendor_code, "locale": "fa"}, common=FOOD_PARAMS)
+    return await fetch(
+        f"{FOOD_BASE}/mobile/v2/restaurant/details/dynamic",
+        {**loc, "vendorCode": vendor_code, "locale": "fa"},
+        common=FOOD_PARAMS,
+    )
 
 
 def _menu_items(data: dict[str, Any]) -> list[dict[str, Any]]:
@@ -482,14 +530,16 @@ def _menu_items(data: dict[str, Any]) -> list[dict[str, Any]]:
             if p["id"] in seen:
                 continue
             seen.add(p["id"])
-            items.append({
-                **p,
-                "categoryTitle": p.get("categoryTitle") or menu.get("category"),
-                "discount": p.get("discount") or 0,
-                "discountRatio": p.get("discountRatio") or 0,
-                "containerPrice": p.get("containerPrice") or 0,
-                "available": not p.get("disabledUntil") and p.get("stock") != 0,
-            })
+            items.append(
+                {
+                    **p,
+                    "categoryTitle": p.get("categoryTitle") or menu.get("category"),
+                    "discount": p.get("discount") or 0,
+                    "discountRatio": p.get("discountRatio") or 0,
+                    "containerPrice": p.get("containerPrice") or 0,
+                    "available": not p.get("disabledUntil") and p.get("stock") != 0,
+                }
+            )
     return items
 
 
@@ -566,7 +616,15 @@ async def _live_prices(dishes: list[dict[str, Any]], loc: dict[str, Any], query:
     for d in dishes:
         p = live.get(d["id"])
         if p and p["available"] and not _is_side(query, p["title"], p["categoryTitle"]):
-            out.append({**d, "price": p["price"], "discount_pct": p["discountRatio"], "final_price": p["price"] - p["discount"], "packaging": p["containerPrice"]})
+            out.append(
+                {
+                    **d,
+                    "price": p["price"],
+                    "discount_pct": p["discountRatio"],
+                    "final_price": p["price"] - p["discount"],
+                    "packaging": p["containerPrice"],
+                }
+            )
     return out
 
 
@@ -598,7 +656,11 @@ def _is_side(query: str, title: str, category: str = "") -> bool:
 
 def _delivery_fee(v: dict[str, Any]) -> int | None:
     """Delivery fee in Toman, after the vendor's delivery discount when one applies. FoodParty sends strings."""
-    fee = v.get("deliveryFeeAfterDiscount") if v.get("isDeliveryFeeHasDiscount") else v.get("deliveryFee", v.get("delivery_fee"))
+    fee = (
+        v.get("deliveryFeeAfterDiscount")
+        if v.get("isDeliveryFeeHasDiscount")
+        else v.get("deliveryFee", v.get("delivery_fee"))
+    )
     return None if fee is None or int(fee) < 0 else int(fee)
 
 

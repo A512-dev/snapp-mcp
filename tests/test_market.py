@@ -111,9 +111,15 @@ async def test_market_store_products_modes(client, api):
     assert found["total"] == 75 and found["products"][0]["id"] == 5260662
 
     cats = (await client.call_tool("market_store_products", base)).structured_content
-    assert cats["categories"][0] == {"id": 731205, "title": "لبنیات و بستنی", "sub_categories": [{"id": 731224, "title": "شیر"}, {"id": 731225, "title": "پنیر آشپزی"}]}
+    assert cats["categories"][0] == {
+        "id": 731205,
+        "title": "لبنیات و بستنی",
+        "sub_categories": [{"id": 731224, "title": "شیر"}, {"id": 731225, "title": "پنیر آشپزی"}],
+    }
 
-    listed = (await client.call_tool("market_store_products", {**base, "category_id": 731205, "subcategory_id": 731225})).structured_content
+    listed = (
+        await client.call_tool("market_store_products", {**base, "category_id": 731205, "subcategory_id": 731225})
+    ).structured_content
     assert listed["total"] == 409 and listed["products"][0]["price"] == 658000
     assert api.calls[-1].url.params["subcat_id"] == "731225"
 

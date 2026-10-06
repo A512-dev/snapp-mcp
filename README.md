@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/sepehr071/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: let your AI agent find the cheapest meal on Snappfood and SnappMarket" width="100%">
+
 # 🍕 snapp-mcp
 
 **Let your AI agent shop around on Snappfood and SnappMarket.**<br>
@@ -11,7 +13,7 @@ read menus and reviews, and catch today's flash deals, all from Claude, Cursor o
 [![PyPI](https://img.shields.io/pypi/v/snapp-mcp?color=2563eb)](https://pypi.org/project/snapp-mcp/)
 [![Python](https://img.shields.io/pypi/pyversions/snapp-mcp)](https://pypi.org/project/snapp-mcp/)
 [![CI](https://github.com/sepehr071/snapp-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/sepehr071/snapp-mcp/actions/workflows/ci.yml)
-[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.sepehr071%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/v0/servers?search=snapp-mcp)
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.sepehr071%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=snapp-mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](https://github.com/sepehr071/snapp-mcp/blob/main/LICENSE)
 
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=snapp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJzbmFwcC1tY3AiXX0=)
@@ -177,7 +179,7 @@ delivery point. The agent gets them from `find_location` or `list_cities` first.
 | `market_reviews` | Customer comments on a store |
 </details>
 
-All tools are annotated `readOnlyHint: true` and return compact structured JSON, so they don't flood the agent's context.
+All 21 tools are annotated `readOnlyHint: true` and return compact structured JSON, so they don't flood the agent's context.
 
 ## Good to know
 
