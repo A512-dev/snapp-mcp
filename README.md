@@ -2,13 +2,13 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/sepehr071/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: let your AI agent find the cheapest meal on Snappfood and SnappMarket" width="100%">
+<img src="https://raw.githubusercontent.com/sepehr071/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: unofficial Snappfood and SnappMarket MCP server for Claude, Cursor and Copilot" width="100%">
 
-# 🍕 snapp-mcp
+# snapp-mcp: Snappfood and SnappMarket MCP server for AI agents
 
-**Let your AI agent shop around on Snappfood and SnappMarket.**<br>
-Search dishes and groceries, compare real prices across hundreds of restaurants and stores,<br>
-read menus and reviews, and catch today's flash deals, all from Claude, Cursor or Copilot.
+**Let your AI agent shop around on Snappfood and SnappMarket (اسنپ&zwnj;فود و اسنپ&zwnj;مارکت).**<br>
+An unofficial, read-only MCP server for Iran's food delivery and grocery apps: search dishes and groceries,<br>
+compare real prices across hundreds of restaurants and stores, read menus and reviews, and catch today's flash deals, all from Claude, Cursor or Copilot.
 
 [![PyPI](https://img.shields.io/pypi/v/snapp-mcp?color=2563eb)](https://pypi.org/project/snapp-mcp/)
 [![Python](https://img.shields.io/pypi/pyversions/snapp-mcp)](https://pypi.org/project/snapp-mcp/)
@@ -19,11 +19,25 @@ read menus and reviews, and catch today's flash deals, all from Claude, Cursor o
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=snapp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJzbmFwcC1tY3AiXX0=)
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_snapp--mcp-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=snapp&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22snapp-mcp%22%5D%7D)
 
-[Quick start](#quick-start) · [What it can do](#what-it-can-do) · [Tools](#tools) · [FAQ](#faq) · [فارسی](#فارسی)
+[For AI agents](#for-ai-agents) · [Quick start](#quick-start) · [What it can do](#what-it-can-do) · [Tools](#tools) · [FAQ](#faq) · [فارسی](#فارسی)
 
 </div>
 
 ---
+
+## For AI agents
+
+- **What:** unofficial MCP server for Snappfood (snappfood.ir, restaurant delivery) and SnappMarket (snapp.market, groceries) in Iran. Queries in Persian match best; prices in Toman.
+- **Install:** `uvx snapp-mcp` or `claude mcp add snapp -- uvx snapp-mcp`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
+- **Auth:** none, no API key or account. Snappfood only accepts Iranian IPs: run it from Iran without a VPN, or set `SNAPP_MCP_PROXY` to an HTTP proxy that exits in Iran.
+- **Access:** read-only. No login, basket, orders or payment, so no confirmation is needed before calling any tool.
+- **Tools:** 21: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
+  Typical sequence: `find_location` -> `food_find_cheapest` -> `food_order_costs` (groceries: `market_find_cheapest` -> `market_store_info`).
+- **Use when:** comparing the real total (food + packaging + delivery) of dishes or groceries near an address in Iran.
+- **Do not use when:** the user wants to order, or is outside Iran with no Iranian IP or proxy (Snappfood answers HTTP 403).
+- **Output:** compact JSON. Prices in Toman, ratings 0-5 (`null` = not rated). Restaurant and store `vendor_code` values pass between tools. FoodParty and Gem deals only run in time windows.
+- **Machine-readable:** [`server.json`](https://github.com/sepehr071/snapp-mcp/blob/main/server.json) and the
+  [awesome-iran-mcp catalog](https://github.com/sepehr071/awesome-iran-mcp) (`TOOLS.md`, `servers.json`, `llms.txt`).
 
 ## Why
 
@@ -190,6 +204,27 @@ All 21 tools are annotated `readOnlyHint: true` and return compact structured JS
 ## FAQ
 
 <details>
+<summary><b>Is there a Snappfood or SnappMarket API or MCP server for AI agents?</b></summary>
+
+Yes: `snapp-mcp` is an unofficial MCP server with 21 read-only tools for dishes, menus, groceries, delivery fees and
+deals. It calls the same public endpoints the Snappfood and SnappMarket web apps use; no API key is needed.
+</details>
+
+<details>
+<summary><b>How do I use Snappfood with Claude, Cursor or Copilot?</b></summary>
+
+Add the server with `claude mcp add snapp -- uvx snapp-mcp` (or the matching config in
+[Quick start](#quick-start) for Claude Desktop, Cursor and VS Code), then ask for a dish near an address, in Persian or English.
+</details>
+
+<details>
+<summary><b>Is it official, safe and free? Does it work outside Iran?</b></summary>
+
+It is unofficial and not affiliated with Snapp. It is read-only (no login, basket or payment), runs on your machine,
+and is free under the MIT license. Outside Iran, Snappfood blocks most IPs, so use an Iranian IP or `SNAPP_MCP_PROXY`.
+</details>
+
+<details>
 <summary><b>I get "blocked the request (HTTP 403)"</b></summary>
 
 Snappfood's firewall only accepts Iranian IP addresses. Run the server on a machine in Iran with the VPN off.
@@ -230,11 +265,13 @@ npx @modelcontextprotocol/inspector uvx snapp-mcp
 |---|---|---|
 | `SNAPP_MCP_PROXY` | unset | HTTP proxy for every request, e.g. `http://user:pass@host:port` |
 
-## فارسی
+<a id="فارسی"></a>
+
+## فارسی: سرور MCP اسنپ&zwnj;فود و اسنپ&zwnj;مارکت
 
 <div dir="rtl">
 
-**snapp-mcp** به دستیار هوش مصنوعی شما (Claude، Cursor، Copilot و ...) اجازه می&zwnj;دهد در اسنپ&zwnj;فود و اسنپ&zwnj;مارکت جستجو کند،
+**snapp-mcp** یک سرور MCP غیررسمی و فقط&zwnj;خواندنی برای اسنپ&zwnj;فود و اسنپ&zwnj;مارکت در ایران است. این سرور به دستیار هوش مصنوعی شما (Claude، Cursor، Copilot و ...) اجازه می&zwnj;دهد در اسنپ&zwnj;فود و اسنپ&zwnj;مارکت جستجو کند،
 قیمت واقعی غذا و کالا را بین صدها رستوران و فروشگاه مقایسه کند، منو و نظرات را بخواند و تخفیف&zwnj;های فعال (فودپارتی، جم، مارکت&zwnj;پارتی) را پیدا کند.
 
 - فقط خواندنی است: وارد حساب نمی&zwnj;شود، سبد خرید نمی&zwnj;سازد و سفارش ثبت نمی&zwnj;کند.
@@ -273,6 +310,11 @@ that tells the agent when to use it. Issues and PRs are welcome, especially new 
 Releases: bump the version in `pyproject.toml` and `server.json`, then push a `v*` tag. GitHub Actions tests,
 publishes to PyPI and the [MCP Registry](https://registry.modelcontextprotocol.io), and creates the GitHub Release.
 
+## Related servers
+
+- [Okala MCP server](https://github.com/sepehr071/okala-mcp) for grocery prices and deals across stores
+- [awesome-iran-mcp](https://github.com/sepehr071/awesome-iran-mcp): catalog of all Iranian-service MCP servers
+
 ## Disclaimer
 
 Unofficial and not affiliated with or endorsed by Snapp. It uses the public endpoints of the snappfood.ir and
@@ -281,3 +323,5 @@ snapp.market web apps, which can change without notice. Please keep request rate
 ## License
 
 [MIT](https://github.com/sepehr071/snapp-mcp/blob/main/LICENSE)
+
+If this saves you clicks, a star helps others find it.
