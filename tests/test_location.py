@@ -5,11 +5,11 @@ from conftest import fixture
 pytestmark = pytest.mark.anyio
 
 
-async def test_all_tools_are_read_only(client):
+async def test_all_tools_are_read_only_except_calorie_save(client):
     tools = (await client.list_tools()).tools
     assert tools
     for t in tools:
-        assert t.annotations.read_only_hint is True, t.name
+        assert t.annotations.read_only_hint is (t.name != "food_calories_save"), t.name
         assert t.description and t.title, t.name
 
 

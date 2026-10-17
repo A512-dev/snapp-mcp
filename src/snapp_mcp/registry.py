@@ -3,14 +3,14 @@
 from collections.abc import Callable
 from typing import Any
 
-TOOLS: list[tuple[Callable[..., Any], str]] = []
+TOOLS: list[tuple[Callable[..., Any], str, bool]] = []
 
 
-def tool(title: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def tool(title: str, read_only: bool = True) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Mark an async function as an MCP tool with a human-readable title."""
 
     def register(fn: Callable[..., Any]) -> Callable[..., Any]:
-        TOOLS.append((fn, title))
+        TOOLS.append((fn, title, read_only))
         return fn
 
     return register
