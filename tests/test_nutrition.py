@@ -143,3 +143,74 @@ async def test_menu_calories_mixes_cached_and_uncached(client, api):
     assert second["cached"] is False and second["weight_g_hint"] == 350
     assert second["similar"][0]["title"] == "زرشک پلو با مرغ"
     assert out["uncached"] == 1
+
+
+def test_normalize_unifies_arabic_persian_and_digits():
+    assert calories.normalize("زرشك‌پلو ١٢٣") == calories.normalize("زرشک پلو ۱۲۳") == "زرشک پلو 123"
+    assert calories.dish_key("پیتزا", None, ["a", "b"]) == calories.dish_key("پیتزا", None, ["b", "a"])
+    assert calories.dish_key("پیتزا") != calories.dish_key("پیتزا", "پنیر")
+
+
+def test_db_created_with_schema_version(db):
+    conn = calories.connect()
+    try:
+        assert conn.execute("SELECT version FROM schema_version").fetchone()[0] == calories.SCHEMA_VERSION
+    finally:
+        conn.close()
+    assert db.exists()
+
+
+async def test_ingredients_reused_and_resave_replaces_lines(client):
+    await save(client, [dish()], ING)
+    lean = dish(title="مرغ ساده")
+    lean["ingredients"] = [{"name": "ران مرغ", "grams_min": 100, "grams_likely": 100, "grams_max": 100}]
+    out = await save(client, [lean])
+    assert out["dishes"][0]["kcal_likely"] == 200 and not out["errors"]
+    changed = dish()
+    changed["ingredients"] = changed["ingredients"][:1]
+    await save(client, [changed])
+    hit = await client.call_tool(
+        "food_calories_lookup", {"items": [{"title": "زرشک پلو با مرغ", "description": "برنج و مرغ"}]}
+    )
+    assert hit.structured_content["items"][0]["ingredients"] == ["برنج 400g"]
+
+
+async def test_user_ingredient_is_kept(client):
+    await save(client, [], [{"name": "برنج", "kcal_per_100g": 111, "source": "user"}])
+    out = await save(client, [], [{"name": "برنج", "kcal_per_100g": 130, "source": "web"}])
+    assert out["ingredients"][0]["status"] == "kept"
+    known = (await client.call_tool("food_ingredients_lookup", {"names": ["برنج"]})).structured_content["known"]
+    assert known[0]["kcal_per_100g"] == 111
+
+
+async def test_lookup_mixed_batch(client):
+    await save(client, [dish()], ING)
+    items = [{"title": "زرشک پلو با مرغ", "description": "برنج و مرغ"}, {"title": "کباب"}]
+    out = (await client.call_tool("food_calories_lookup", {"items": items})).structured_content["items"]
+    assert out[0]["cached"] is True
+    assert out[1]["cached"] is False and out[1]["similar"] == []
+
+
+async def test_menu_calories_query_limit_and_toppings(client, api):
+    products = [
+        {
+            "title": "پیتزا",
+            "description": "",
+            "variations": [{"id": 1, "price": 100, "toppings": [{"options": [{"title": "قارچ"}]}]}],
+        },
+        {"title": "نوشابه", "variations": [{"id": 2, "price": 10}]},
+    ]
+    api["/menu-read-model/947evd"] = {"data": {"menuCategories": [{"title": "x", "products": products}]}}
+    out = (
+        await client.call_tool("food_menu_calories", {"vendor_code": "947evd", **SHIRAZ, "query": "پیتزا"})
+    ).structured_content
+    assert out["total_items"] == 1 and out["items"][0]["toppings"] == ["قارچ"]
+    out = (
+        await client.call_tool("food_menu_calories", {"vendor_code": "947evd", **SHIRAZ, "limit": 1})
+    ).structured_content
+    assert out["total_items"] == 2 and len(out["items"]) == 1
+
+
+async def test_menu_calories_rejects_bad_vendor_code(client, api):
+    result = await client.call_tool("food_menu_calories", {"vendor_code": "../x", **SHIRAZ})
+    assert result.is_error and not api.calls
