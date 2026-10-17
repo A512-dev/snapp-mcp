@@ -1,8 +1,8 @@
-<!-- mcp-name: io.github.sepehr071/snapp-mcp -->
+<!-- mcp-name: io.github.A512-dev/snapp-mcp -->
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/sepehr071/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: unofficial Snappfood and SnappMarket MCP server for Claude, Cursor and Copilot" width="100%">
+<img src="https://raw.githubusercontent.com/A512-dev/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: unofficial Snappfood and SnappMarket MCP server for Claude, Cursor and Copilot" width="100%">
 
 # snapp-mcp: Snappfood and SnappMarket MCP server for AI agents
 
@@ -12,9 +12,9 @@ compare real prices across hundreds of restaurants and stores, read menus and re
 
 [![PyPI](https://img.shields.io/pypi/v/snapp-mcp?color=2563eb)](https://pypi.org/project/snapp-mcp/)
 [![Python](https://img.shields.io/pypi/pyversions/snapp-mcp)](https://pypi.org/project/snapp-mcp/)
-[![CI](https://github.com/sepehr071/snapp-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/sepehr071/snapp-mcp/actions/workflows/ci.yml)
-[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.sepehr071%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=snapp-mcp)
-[![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](https://github.com/sepehr071/snapp-mcp/blob/main/LICENSE)
+[![CI](https://github.com/A512-dev/snapp-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/A512-dev/snapp-mcp/actions/workflows/ci.yml)
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.A512-dev%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=snapp-mcp)
+[![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](https://github.com/A512-dev/snapp-mcp/blob/main/LICENSE)
 
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=snapp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJzbmFwcC1tY3AiXX0=)
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_snapp--mcp-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=snapp&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22snapp-mcp%22%5D%7D)
@@ -36,7 +36,7 @@ compare real prices across hundreds of restaurants and stores, read menus and re
 - **Use when:** comparing the real total (food + packaging + delivery) of dishes or groceries near an address in Iran.
 - **Do not use when:** the user wants to order, or is outside Iran with no Iranian IP or proxy (Snappfood answers HTTP 403).
 - **Output:** compact JSON. Prices in Toman, ratings 0-5 (`null` = not rated). Restaurant and store `vendor_code` values pass between tools. FoodParty and Gem deals only run in time windows.
-- **Machine-readable:** [`server.json`](https://github.com/sepehr071/snapp-mcp/blob/main/server.json) and the
+- **Machine-readable:** [`server.json`](https://github.com/A512-dev/snapp-mcp/blob/main/server.json) and the
   [awesome-iran-mcp catalog](https://github.com/sepehr071/awesome-iran-mcp) (`TOOLS.md`, `servers.json`, `llms.txt`).
 
 ## Why
@@ -321,7 +321,7 @@ claude mcp add snapp -- uvx snapp-mcp
 ## Development
 
 ```bash
-git clone https://github.com/sepehr071/snapp-mcp && cd snapp-mcp
+git clone https://github.com/A512-dev/snapp-mcp && cd snapp-mcp
 uv sync
 uv run pytest            # offline, against recorded responses
 uv run pytest -m live    # real APIs (needs an Iranian IP)
@@ -339,6 +339,10 @@ publishes to PyPI and the [MCP Registry](https://registry.modelcontextprotocol.i
 - [Okala MCP server](https://github.com/sepehr071/okala-mcp) for grocery prices and deals across stores
 - [awesome-iran-mcp](https://github.com/sepehr071/awesome-iran-mcp): catalog of all Iranian-service MCP servers
 
+## Credits
+
+This is a fork of [sepehr071/snapp-mcp](https://github.com/sepehr071/snapp-mcp) by Sepehr Radmard. The calorie tools and `food_menu_descriptions` were added here. Both authors are credited in the [MIT license](LICENSE).
+
 ## Disclaimer
 
 Unofficial and not affiliated with or endorsed by Snapp. It uses the public endpoints of the snappfood.ir and
@@ -346,6 +350,6 @@ snapp.market web apps, which can change without notice. Please keep request rate
 
 ## License
 
-[MIT](https://github.com/sepehr071/snapp-mcp/blob/main/LICENSE)
+[MIT](https://github.com/A512-dev/snapp-mcp/blob/main/LICENSE)
 
 If this saves you clicks, a star helps others find it.

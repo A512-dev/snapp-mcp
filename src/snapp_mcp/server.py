@@ -43,7 +43,7 @@ mcp = MCPServer(
     title="Snappfood & SnappMarket",
     instructions=INSTRUCTIONS,
     version=__version__,
-    website_url="https://github.com/sepehr071/snapp-mcp",
+    website_url="https://github.com/A512-dev/snapp-mcp",
 )
 
 for fn, title, read_only in TOOLS:

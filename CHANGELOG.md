@@ -2,7 +2,9 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased
+## 0.2.0 - 2026-10-17
+
+Fork of [sepehr071/snapp-mcp](https://github.com/sepehr071/snapp-mcp), maintained at [A512-dev/snapp-mcp](https://github.com/A512-dev/snapp-mcp).
 
 ### Added
 
