@@ -21,6 +21,12 @@ Fork of [sepehr071/snapp-mcp](https://github.com/sepehr071/snapp-mcp), maintaine
 - Server instructions describing the calorie workflow for agents.
 - `read_only` flag on the tool registry; `food_calories_save` is annotated as a non-read-only, non-destructive tool.
 
+### Changed
+
+- Package renamed to `snapp-mcp-calories`. It is not published to PyPI or the MCP Registry; install from GitHub with
+  `uvx --from git+https://github.com/A512-dev/snapp-mcp snapp-mcp-calories`.
+- Removed the PyPI publish workflow and `server.json`.
+
 ## 0.1.3
 
 - Author set to Sepehr Radmard.
