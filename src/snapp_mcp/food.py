@@ -139,7 +139,7 @@ async def food_find_cheapest(
             and (o["id"] not in best or o["total"] < best[o["id"]]["total"])
         ):
             best[o["id"]] = o
-    # ponytail: price-only ranking, no per-portion normalization
+    # Ranking is by price only, with no per-portion normalization.
     dishes = sorted(best.values(), key=lambda o: o["total"])
     return {"restaurants_scanned": len(vendors), "failed_calls": skipped, "dishes": dishes[:limit]}
 
@@ -703,7 +703,7 @@ async def _live_prices(dishes: list[dict[str, Any]], loc: dict[str, Any], query:
 
 
 # Words marking a side item rather than a dish, in a menu category or at the start of a title.
-# ponytail: keyword heuristic, misses unusual category names; a per-vendor category model if it matters.
+# Keyword heuristic: it can miss unusual category names.
 SIDE_CATEGORIES = ("سس", "نوشیدنی", "دسر", "پیش غذا", "مخلفات", "افزودنی", "اضافه", "دورچین")
 SIDE_TITLES = ("سس", "خمیر", "نوشابه", "دوغ")
 

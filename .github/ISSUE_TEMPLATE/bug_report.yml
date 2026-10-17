@@ -6,7 +6,7 @@ body:
     id: tool
     attributes:
       label: Tool
-      description: Which tool, e.g. food_find_cheapest
+      description: Which tool, e.g. food_find_cheapest or food_menu_calories
     validations:
       required: true
   - type: textarea
@@ -41,3 +41,8 @@ body:
     attributes:
       label: snapp-mcp version
       placeholder: "0.1.0"
+  - type: textarea
+    id: calories
+    attributes:
+      label: Calorie tools only
+      description: The dish title and description, and whether the local database (SNAPP_MCP_DB) was fresh or reused.

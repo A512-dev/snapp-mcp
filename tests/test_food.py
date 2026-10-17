@@ -238,9 +238,7 @@ async def test_food_menu_descriptions(client, api):
                         {
                             "title": "خوراک مرغ",
                             "description": "مرغ سس پز",
-                            "variations": [
-                                {"id": 102, "active": False, "price": 620000, "stock": None}
-                            ],
+                            "variations": [{"id": 102, "active": False, "price": 620000, "stock": None}],
                         },
                     ],
                 },

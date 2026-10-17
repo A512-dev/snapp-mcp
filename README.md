@@ -30,8 +30,8 @@ compare real prices across hundreds of restaurants and stores, read menus and re
 - **What:** unofficial MCP server for Snappfood (snappfood.ir, restaurant delivery) and SnappMarket (snapp.market, groceries) in Iran. Queries in Persian match best; prices in Toman.
 - **Install:** `uvx snapp-mcp` or `claude mcp add snapp -- uvx snapp-mcp`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
 - **Auth:** none, no API key or account. Snappfood only accepts Iranian IPs: run it from Iran without a VPN, or set `SNAPP_MCP_PROXY` to an HTTP proxy that exits in Iran.
-- **Access:** read-only. No login, basket, orders or payment, so no confirmation is needed before calling any tool.
-- **Tools:** 22: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
+- **Access:** read-only against Snappfood and SnappMarket. No login, basket, orders or payment. The only write is `food_calories_save`, which stores calorie estimates in a local SQLite file.
+- **Tools:** 26: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
   Typical sequence: `find_location` -> `food_find_cheapest` -> `food_order_costs` (groceries: `market_find_cheapest` -> `market_store_info`).
 - **Use when:** comparing the real total (food + packaging + delivery) of dishes or groceries near an address in Iran.
 - **Do not use when:** the user wants to order, or is outside Iran with no Iranian IP or proxy (Snappfood answers HTTP 403).
@@ -67,7 +67,8 @@ restaurant's minimum order. An agent with `snapp-mcp` does that in seconds:
 - 📋 **Read** full menus, store catalogs, minimum orders, delivery fees, ETAs and coupons
 - ⚡ **Catch deals**: FoodParty flash deals, meals for one, Gem hunts, Market Party
 - ⭐ **Check quality** with customer reviews before recommending anything
-- 🔒 **Read-only by design**: no login, no basket, no orders, no payment
+- 🔥 **Estimate calories** from menu descriptions and ingredients, cached in a local database (see [Calories](#calories))
+- 🔒 **Read-only by design**: no login, no basket, no orders, no payment (the only write is the local calorie cache)
 
 ## Quick start
 
@@ -228,7 +229,7 @@ Calories are estimates, shown as a min / likely / max range with a confidence le
 <details>
 <summary><b>Is there a Snappfood or SnappMarket API or MCP server for AI agents?</b></summary>
 
-Yes: `snapp-mcp` is an unofficial MCP server with 22 read-only tools for dishes, menus, groceries, delivery fees and
+Yes: `snapp-mcp` is an unofficial MCP server with 26 tools (25 read-only) for dishes, menus, groceries, delivery fees and
 deals. It calls the same public endpoints the Snappfood and SnappMarket web apps use; no API key is needed.
 </details>
 
@@ -286,6 +287,7 @@ npx @modelcontextprotocol/inspector uvx snapp-mcp
 | Variable | Default | Meaning |
 |---|---|---|
 | `SNAPP_MCP_PROXY` | unset | HTTP proxy for every request, e.g. `http://user:pass@host:port` |
+| `SNAPP_MCP_DB` | `~/.local/share/snapp-mcp/calories.db` | Path of the local SQLite calorie knowledge base |
 
 <a id="فارسی"></a>
 
@@ -326,7 +328,7 @@ uv run pytest -m live    # real APIs (needs an Iranian IP)
 uv run ruff check .
 ```
 
-Tools live in `src/snapp_mcp/food.py`, `market.py` and `location.py`; each is a typed async function with a docstring
+Tools live in `src/snapp_mcp/food.py`, `market.py`, `location.py` and `nutrition.py` (calories, backed by `calories.py`); each is a typed async function with a docstring
 that tells the agent when to use it. Issues and PRs are welcome, especially new tools and fixes for API changes.
 
 Releases: bump the version in `pyproject.toml` and `server.json`, then push a `v*` tag. GitHub Actions tests,

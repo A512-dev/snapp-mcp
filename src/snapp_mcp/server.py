@@ -16,8 +16,8 @@ Workflow:
 1. Get coordinates: find_location (address/landmark) or list_cities (city center). All food_* and
    market_* tools need lat/long because menus, prices and delivery depend on the delivery point.
 2. Food: food_search / food_find_cheapest for dishes, food_restaurants for restaurants,
-   food_menu / food_menu_descriptions for one restaurant, food_order_costs before recommending (delivery fee, minimum
-order, coupons), deals via food_party_deals / food_meal_for_one / food_discounted_vendors.
+   food_menu / food_menu_descriptions (with item descriptions) for one restaurant, food_order_costs before
+   recommending (delivery fee, minimum order, coupons), deals via food_party_deals / food_meal_for_one / food_discounted_vendors.
 3. Groceries: market_search / market_find_cheapest, market_stores, market_store_info,
    market_store_products, market_party_deals.
 4. Calories (estimates, never exact): food_menu_calories lists a menu with cached estimates or, for
