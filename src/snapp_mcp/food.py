@@ -248,6 +248,41 @@ async def food_menu(
     }
 
 
+@tool("Restaurant menu with descriptions")
+async def food_menu_descriptions(
+    vendor_code: VendorCode,
+    lat: Lat,
+    long: Long,
+    query: Annotated[str | None, Field(description="Only items whose title contains this text.")] = None,
+    limit: Annotated[int, Field(ge=1, le=300, description="Max items to return.")] = 100,
+) -> dict[str, Any]:
+    """Get a restaurant's menu with Snappfood's item descriptions, prices and availability.
+
+    Use when dish descriptions or listed ingredients are needed. Descriptions come from
+    Snappfood; an empty description means none was provided. Prices are in Toman.
+    """
+    data = await _menu_descriptions(vendor_code, {"lat": lat, "long": long})
+    payload = data.get("data", {})
+    vendor = payload.get("vendor", {})
+    items = _menu_description_items(payload)
+    if query:
+        items = [item for item in items if _has(query, item["title"] or "")]
+
+    return {
+        "vendor": {
+            "code": vendor.get("code") or vendor.get("vendorCode") or vendor_code,
+            "title": vendor.get("title"),
+            "rating": _stars(vendor.get("rating")),
+            "reviews": vendor.get("commentCount"),
+            "open": vendor.get("isOpenNow"),
+            "min_order": vendor.get("minOrder"),
+            "delivery_fee": _delivery_fee(vendor),
+        },
+        "total_items": len(items),
+        "items": items[:limit],
+    }
+
+
 @tool("Order costs")
 async def food_order_costs(vendor_code: VendorCode, lat: Lat, long: Long) -> dict[str, Any]:
     """Get the extra costs and conditions of ordering from one restaurant.
@@ -520,6 +555,45 @@ async def _menu(vendor_code: str, loc: dict[str, Any]) -> Any:
         {**loc, "vendorCode": vendor_code, "locale": "fa"},
         common=FOOD_PARAMS,
     )
+
+
+async def _menu_descriptions(vendor_code: str, loc: dict[str, Any]) -> Any:
+    """Fetch Snappfood's menu-read-model, which includes product descriptions."""
+    return await fetch(
+        f"{FOOD_APIGW}/menu-read-model/{vendor_code}",
+        loc,
+        common=FOOD_PARAMS,
+    )
+
+
+def _menu_description_items(data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Unique menu-read-model products with descriptions and normalized prices."""
+    items, seen = [], set()
+    for category in data.get("menuCategories", []):
+        for product in category.get("products", []):
+            for variation in product.get("variations", []):
+                item_id = variation.get("id")
+                if item_id is not None and item_id in seen:
+                    continue
+                if item_id is not None:
+                    seen.add(item_id)
+                price = variation.get("price", 0)
+                discount = variation.get("discount") or {}
+                items.append(
+                    {
+                        "id": item_id,
+                        "title": product.get("title") or variation.get("title"),
+                        "description": product.get("description") or variation.get("description") or "",
+                        "category": product.get("menuCategoryTitle") or category.get("title"),
+                        "price": price,
+                        "discount_pct": discount.get("ratio", 0),
+                        "final_price": price - discount.get("amount", 0),
+                        "available": variation.get("active", True)
+                        and not variation.get("disabledUntil")
+                        and variation.get("stock") != 0,
+                    }
+                )
+    return items
 
 
 def _menu_items(data: dict[str, Any]) -> list[dict[str, Any]]:

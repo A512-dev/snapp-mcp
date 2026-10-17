@@ -205,6 +205,108 @@ async def test_food_menu(client, api):
     assert filtered.structured_content["total_items"] == 2 and len(filtered.structured_content["items"]) == 1
 
 
+async def test_food_menu_descriptions(client, api):
+    api["/menu-read-model/947evd"] = {
+        "status": True,
+        "data": {
+            "vendor": {
+                "vendorCode": "947evd",
+                "title": "رستوران نمونه",
+                "rating": 9,
+                "commentCount": 120,
+                "minOrder": 100000,
+                "deliveryFee": 25000,
+                "isOpenNow": True,
+            },
+            "menuCategories": [
+                {
+                    "title": "غذای روز",
+                    "products": [
+                        {
+                            "title": "زرشک پلو با مرغ",
+                            "description": "برنج ایرانی، مرغ و زرشک",
+                            "variations": [
+                                {
+                                    "id": 101,
+                                    "active": True,
+                                    "price": 920000,
+                                    "discount": {"amount": 92000, "ratio": 10},
+                                    "stock": 3,
+                                }
+                            ],
+                        },
+                        {
+                            "title": "خوراک مرغ",
+                            "description": "مرغ سس پز",
+                            "variations": [
+                                {"id": 102, "active": False, "price": 620000, "stock": None}
+                            ],
+                        },
+                    ],
+                },
+                {
+                    "title": "پرطرفدارها",
+                    "products": [
+                        {
+                            "title": "زرشک پلو با مرغ",
+                            "description": "برنج ایرانی، مرغ و زرشک",
+                            "variations": [
+                                {
+                                    "id": 101,
+                                    "active": True,
+                                    "price": 920000,
+                                    "discount": {"amount": 92000, "ratio": 10},
+                                    "stock": 3,
+                                }
+                            ],
+                        }
+                    ],
+                },
+            ],
+        },
+    }
+
+    result = await client.call_tool("food_menu_descriptions", {"vendor_code": "947evd", **SHIRAZ})
+    out = result.structured_content
+    assert out["vendor"] == {
+        "code": "947evd",
+        "title": "رستوران نمونه",
+        "rating": 4.5,
+        "reviews": 120,
+        "open": True,
+        "min_order": 100000,
+        "delivery_fee": 25000,
+    }
+    items = {item["id"]: item for item in out["items"]}
+    assert out["total_items"] == 2  # repeated popular items are deduplicated
+    assert items[101] == {
+        "id": 101,
+        "title": "زرشک پلو با مرغ",
+        "description": "برنج ایرانی، مرغ و زرشک",
+        "category": "غذای روز",
+        "price": 920000,
+        "discount_pct": 10,
+        "final_price": 828000,
+        "available": True,
+    }
+    assert items[102]["description"] == "مرغ سس پز"
+    assert items[102]["available"] is False
+    assert api.calls[0].url.path == "/menu-read-model/947evd"
+    assert api.calls[0].url.params["lat"] == str(SHIRAZ["lat"])
+    assert api.calls[0].url.params["long"] == str(SHIRAZ["long"])
+
+    filtered = await client.call_tool(
+        "food_menu_descriptions", {"vendor_code": "947evd", **SHIRAZ, "query": "زرشک", "limit": 1}
+    )
+    assert filtered.structured_content["total_items"] == 1
+    assert len(filtered.structured_content["items"]) == 1
+
+
+async def test_food_menu_descriptions_rejects_bad_vendor_code(client, api):
+    result = await client.call_tool("food_menu_descriptions", {"vendor_code": "../x", **SHIRAZ})
+    assert result.is_error and not api.calls
+
+
 async def test_food_menu_rejects_bad_vendor_code(client, api):
     result = await client.call_tool("food_menu", {"vendor_code": "../x", **SHIRAZ})
     assert result.is_error and not api.calls

@@ -31,7 +31,7 @@ compare real prices across hundreds of restaurants and stores, read menus and re
 - **Install:** `uvx snapp-mcp` or `claude mcp add snapp -- uvx snapp-mcp`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
 - **Auth:** none, no API key or account. Snappfood only accepts Iranian IPs: run it from Iran without a VPN, or set `SNAPP_MCP_PROXY` to an HTTP proxy that exits in Iran.
 - **Access:** read-only. No login, basket, orders or payment, so no confirmation is needed before calling any tool.
-- **Tools:** 21: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
+- **Tools:** 22: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
   Typical sequence: `find_location` -> `food_find_cheapest` -> `food_order_costs` (groceries: `market_find_cheapest` -> `market_store_info`).
 - **Use when:** comparing the real total (food + packaging + delivery) of dishes or groceries near an address in Iran.
 - **Do not use when:** the user wants to order, or is outside Iran with no Iranian IP or proxy (Snappfood answers HTTP 403).
@@ -162,7 +162,7 @@ delivery point. The agent gets them from `find_location` or `list_cities` first.
 </details>
 
 <details open>
-<summary><b>🍔 Snappfood: restaurants</b> (9)</summary>
+<summary><b>🍔 Snappfood: restaurants</b> (10)</summary>
 
 | Tool | What it does |
 |---|---|
@@ -170,6 +170,7 @@ delivery point. The agent gets them from `find_location` or `list_cities` first.
 | `food_find_cheapest` | Scan nearby menus + FoodParty for the lowest total price (food + packaging + delivery) |
 | `food_restaurants` | Restaurants with filters (free delivery, discount, coupon) and sorting |
 | `food_menu` | One restaurant's full menu with prices, packaging fees and availability |
+| `food_menu_descriptions` | One restaurant's menu with Snappfood descriptions, prices and availability |
 | `food_order_costs` | Delivery fee, ETA, minimum order and coupons of one restaurant |
 | `food_reviews` | Customer reviews, with what they ordered and the restaurant's reply |
 | `food_party_deals` | FoodParty flash deals still in stock, with the deal window |
@@ -193,7 +194,28 @@ delivery point. The agent gets them from `find_location` or `list_cities` first.
 | `market_reviews` | Customer comments on a store |
 </details>
 
-All 21 tools are annotated `readOnlyHint: true` and return compact structured JSON, so they don't flood the agent's context.
+<details open>
+<summary><b>🔥 Calories</b> (4)</summary>
+
+| Tool | What it does |
+|---|---|
+| `food_menu_calories` | A menu with cached calorie ranges, or similar known dishes for uncached ones |
+| `food_calories_lookup` | Exact or similar dishes from the local knowledge base |
+| `food_ingredients_lookup` | Known kcal per 100 g for ingredients; lists the missing ones |
+| `food_calories_save` | Batch-saves ingredients and ingredient-based dish estimates (the only non-read-only tool) |
+</details>
+
+All tools except `food_calories_save` are annotated `readOnlyHint: true` and return compact structured JSON, so they don't flood the agent's context.
+
+### Calories
+
+Calories are estimates, shown as a min / likely / max range with a confidence level. The server has no web search; the connected agent does the research, and a local SQLite database remembers the results (`$SNAPP_MCP_DB`, default `~/.local/share/snapp-mcp/calories.db`).
+
+1. Check the database: an exact match is done, a similar dish is only a starting point.
+2. Break the dish into ingredients with `grams_min` / `grams_likely` / `grams_max`, using stated weights first. Cooking fat is its own ingredient.
+3. Look up kcal per 100 g per ingredient (`food_ingredients_lookup`); research only the missing ones.
+4. Cross-check against a figure found online. A gap above 25% returns a warning.
+5. Save everything in one `food_calories_save` call. The server sums the totals and derives confidence (`high`: within 15% of the cross-check and a stated weight; `medium`: one of the two; otherwise `low`).
 
 ## Good to know
 
@@ -206,7 +228,7 @@ All 21 tools are annotated `readOnlyHint: true` and return compact structured JS
 <details>
 <summary><b>Is there a Snappfood or SnappMarket API or MCP server for AI agents?</b></summary>
 
-Yes: `snapp-mcp` is an unofficial MCP server with 21 read-only tools for dishes, menus, groceries, delivery fees and
+Yes: `snapp-mcp` is an unofficial MCP server with 22 read-only tools for dishes, menus, groceries, delivery fees and
 deals. It calls the same public endpoints the Snappfood and SnappMarket web apps use; no API key is needed.
 </details>
 
