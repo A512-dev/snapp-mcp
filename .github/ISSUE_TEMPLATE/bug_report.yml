@@ -39,7 +39,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: snapp-mcp version
+      label: snapp-mcp-calories version
       placeholder: "0.1.0"
   - type: textarea
     id: calories

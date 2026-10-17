@@ -961,7 +961,7 @@ wheels = [
 ]
 
 [[package]]
-name = "snapp-mcp"
+name = "snapp-mcp-calories"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [

@@ -1,5 +1,5 @@
 [project]
-name = "snapp-mcp"
+name = "snapp-mcp-calories"
 version = "0.2.0"
 description = "Unofficial read-only MCP server for Snappfood and SnappMarket: search food and groceries, compare prices, find deals."
 readme = "README.md"
@@ -32,7 +32,7 @@ Homepage = "https://github.com/A512-dev/snapp-mcp"
 Issues = "https://github.com/A512-dev/snapp-mcp/issues"
 
 [project.scripts]
-snapp-mcp = "snapp_mcp.server:main"
+snapp-mcp-calories = "snapp_mcp.server:main"
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6"]

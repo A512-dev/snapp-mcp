@@ -2,22 +2,22 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/A512-dev/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: unofficial Snappfood and SnappMarket MCP server for Claude, Cursor and Copilot" width="100%">
+<img src="https://raw.githubusercontent.com/A512-dev/snapp-mcp/main/.github/banner.png" alt="snapp-mcp-calories: unofficial Snappfood and SnappMarket MCP server for Claude, Cursor and Copilot" width="100%">
 
-# snapp-mcp: Snappfood and SnappMarket MCP server for AI agents
+# snapp-mcp-calories: Snappfood and SnappMarket MCP server for AI agents
 
 **Let your AI agent shop around on Snappfood and SnappMarket (اسنپ&zwnj;فود و اسنپ&zwnj;مارکت).**<br>
 An unofficial, read-only MCP server for Iran's food delivery and grocery apps: search dishes and groceries,<br>
 compare real prices across hundreds of restaurants and stores, read menus and reviews, and catch today's flash deals, all from Claude, Cursor or Copilot.
 
-[![PyPI](https://img.shields.io/pypi/v/snapp-mcp?color=2563eb)](https://pypi.org/project/snapp-mcp/)
-[![Python](https://img.shields.io/pypi/pyversions/snapp-mcp)](https://pypi.org/project/snapp-mcp/)
+[![PyPI](https://img.shields.io/pypi/v/snapp-mcp-calories?color=2563eb)](https://pypi.org/project/snapp-mcp-calories/)
+[![Python](https://img.shields.io/pypi/pyversions/snapp-mcp-calories)](https://pypi.org/project/snapp-mcp-calories/)
 [![CI](https://github.com/A512-dev/snapp-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/A512-dev/snapp-mcp/actions/workflows/ci.yml)
-[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.A512-dev%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=snapp-mcp)
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.A512-dev%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=snapp-mcp-calories)
 [![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](https://github.com/A512-dev/snapp-mcp/blob/main/LICENSE)
 
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=snapp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJzbmFwcC1tY3AiXX0=)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_snapp--mcp-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=snapp&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22snapp-mcp%22%5D%7D)
+[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=snapp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJzbmFwcC1tY3AtY2Fsb3JpZXMiXX0=)
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_snapp--mcp--calories-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=snapp&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22snapp-mcp-calories%22%5D%7D)
 
 [For AI agents](#for-ai-agents) · [Quick start](#quick-start) · [What it can do](#what-it-can-do) · [Tools](#tools) · [FAQ](#faq) · [فارسی](#فارسی)
 
@@ -28,7 +28,7 @@ compare real prices across hundreds of restaurants and stores, read menus and re
 ## For AI agents
 
 - **What:** unofficial MCP server for Snappfood (snappfood.ir, restaurant delivery) and SnappMarket (snapp.market, groceries) in Iran. Queries in Persian match best; prices in Toman.
-- **Install:** `uvx snapp-mcp` or `claude mcp add snapp -- uvx snapp-mcp`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
+- **Install:** `uvx snapp-mcp-calories` or `claude mcp add snapp -- uvx snapp-mcp-calories`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
 - **Auth:** none, no API key or account. Snappfood only accepts Iranian IPs: run it from Iran without a VPN, or set `SNAPP_MCP_PROXY` to an HTTP proxy that exits in Iran.
 - **Access:** read-only against Snappfood and SnappMarket. No login, basket, orders or payment. The only write is `food_calories_save`, which stores calorie estimates in a local SQLite file.
 - **Tools:** 26: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
@@ -43,7 +43,7 @@ compare real prices across hundreds of restaurants and stores, read menus and re
 
 Snappfood shows you one restaurant at a time. Finding *the cheapest pizza that actually reaches your door*
 means opening dozens of menus, adding packaging and delivery fees in your head, and checking each
-restaurant's minimum order. An agent with `snapp-mcp` does that in seconds:
+restaurant's minimum order. An agent with `snapp-mcp-calories` does that in seconds:
 
 > **You:** Cheapest pizza delivered to Vanak Square right now, including delivery?
 >
@@ -79,7 +79,7 @@ You need [uv](https://docs.astral.sh/uv/getting-started/installation/) and **an 
 <summary><b>Claude Code</b></summary>
 
 ```bash
-claude mcp add snapp -- uvx snapp-mcp
+claude mcp add snapp -- uvx snapp-mcp-calories
 ```
 </details>
 
@@ -91,7 +91,7 @@ Settings → Developer → Edit Config, then add:
 ```json
 {
   "mcpServers": {
-    "snapp": { "command": "uvx", "args": ["snapp-mcp"] }
+    "snapp": { "command": "uvx", "args": ["snapp-mcp-calories"] }
   }
 }
 ```
@@ -111,7 +111,7 @@ Click **Install in VS Code** above, or add to `.vscode/mcp.json`:
 ```json
 {
   "servers": {
-    "snapp": { "type": "stdio", "command": "uvx", "args": ["snapp-mcp"] }
+    "snapp": { "type": "stdio", "command": "uvx", "args": ["snapp-mcp-calories"] }
   }
 }
 ```
@@ -120,7 +120,7 @@ Click **Install in VS Code** above, or add to `.vscode/mcp.json`:
 <details>
 <summary><b>Anything else</b></summary>
 
-It's a standard stdio MCP server: run `uvx snapp-mcp`, or `pip install snapp-mcp` and run `snapp-mcp`.
+It's a standard stdio MCP server: run `uvx snapp-mcp-calories`, or `pip install snapp-mcp-calories` and run `snapp-mcp-calories`.
 </details>
 
 Then just ask:
@@ -137,14 +137,14 @@ Then just ask:
       │
       │  MCP over stdio
       ▼
-  snapp-mcp  (runs on your machine, uses your IP)
+  snapp-mcp-calories  (runs on your machine, uses your IP)
       │
       │  HTTPS
       ├──────▶  snappfood.ir    restaurants
       └──────▶  snapp.market    groceries
 ```
 
-`snapp-mcp` runs locally and calls the same public endpoints the Snappfood and SnappMarket web apps use.
+`snapp-mcp-calories` runs locally and calls the same public endpoints the Snappfood and SnappMarket web apps use.
 There's no hosted server in between, no API key, and nothing about you is sent anywhere else.
 
 ## Tools
@@ -229,14 +229,14 @@ Calories are estimates, shown as a min / likely / max range with a confidence le
 <details>
 <summary><b>Is there a Snappfood or SnappMarket API or MCP server for AI agents?</b></summary>
 
-Yes: `snapp-mcp` is an unofficial MCP server with 26 tools (25 read-only) for dishes, menus, groceries, delivery fees and
+Yes: `snapp-mcp-calories` is an unofficial MCP server with 26 tools (25 read-only) for dishes, menus, groceries, delivery fees and
 deals. It calls the same public endpoints the Snappfood and SnappMarket web apps use; no API key is needed.
 </details>
 
 <details>
 <summary><b>How do I use Snappfood with Claude, Cursor or Copilot?</b></summary>
 
-Add the server with `claude mcp add snapp -- uvx snapp-mcp` (or the matching config in
+Add the server with `claude mcp add snapp -- uvx snapp-mcp-calories` (or the matching config in
 [Quick start](#quick-start) for Claude Desktop, Cursor and VS Code), then ask for a dish near an address, in Persian or English.
 </details>
 
@@ -278,7 +278,7 @@ Use the full path to `uvx` (`where uvx` on Windows, `which uvx` on macOS/Linux) 
 <summary><b>How do I debug what the agent sees?</b></summary>
 
 ```bash
-npx @modelcontextprotocol/inspector uvx snapp-mcp
+npx @modelcontextprotocol/inspector uvx snapp-mcp-calories
 ```
 </details>
 
@@ -295,7 +295,7 @@ npx @modelcontextprotocol/inspector uvx snapp-mcp
 
 <div dir="rtl">
 
-**snapp-mcp** یک سرور MCP غیررسمی و فقط&zwnj;خواندنی برای اسنپ&zwnj;فود و اسنپ&zwnj;مارکت در ایران است. این سرور به دستیار هوش مصنوعی شما (Claude، Cursor، Copilot و ...) اجازه می&zwnj;دهد در اسنپ&zwnj;فود و اسنپ&zwnj;مارکت جستجو کند،
+**snapp-mcp-calories** یک سرور MCP غیررسمی و فقط&zwnj;خواندنی برای اسنپ&zwnj;فود و اسنپ&zwnj;مارکت در ایران است. این سرور به دستیار هوش مصنوعی شما (Claude، Cursor، Copilot و ...) اجازه می&zwnj;دهد در اسنپ&zwnj;فود و اسنپ&zwnj;مارکت جستجو کند،
 قیمت واقعی غذا و کالا را بین صدها رستوران و فروشگاه مقایسه کند، منو و نظرات را بخواند و تخفیف&zwnj;های فعال (فودپارتی، جم، مارکت&zwnj;پارتی) را پیدا کند.
 
 - فقط خواندنی است: وارد حساب نمی&zwnj;شود، سبد خرید نمی&zwnj;سازد و سفارش ثبت نمی&zwnj;کند.
@@ -307,7 +307,7 @@ npx @modelcontextprotocol/inspector uvx snapp-mcp
 </div>
 
 ```bash
-claude mcp add snapp -- uvx snapp-mcp
+claude mcp add snapp -- uvx snapp-mcp-calories
 ```
 
 <div dir="rtl">

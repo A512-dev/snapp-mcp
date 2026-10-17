@@ -2,4 +2,4 @@
 
 from importlib.metadata import version
 
-__version__ = version("snapp-mcp")
+__version__ = version("snapp-mcp-calories")
